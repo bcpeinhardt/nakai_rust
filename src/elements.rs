@@ -59,22 +59,16 @@ pub enum Node {
     Nothing,
 }
 
-macro_rules! t {
-    ($e:expr) => {
-        &[Node::Text { content: $e.into() }]
-    };
-}
-
 /// Generates the html helpers
 macro_rules! html {
     ($($i:ident),+) => {
         paste! {
-            $(pub fn $i<const N: usize, const M: usize>(attrs: [Attr; N], children: [impl Into<Node> + Clone; M]) -> Node {
-                [<$i _inner>](&attrs, &children)
+            $(pub fn $i(attrs: impl Into<Vec<Attr>>, children: impl Into<Vec<Node>>) -> Node {
+                [<$i _inner>](attrs.into(), children.into())
             }
 
-            pub fn [<$i _inner>](attrs: &[Attr], children: &[impl Into<Node> + Clone]) -> Node {
-                Node::Element { tag: stringify!($i).into(), attrs: attrs.to_vec(), children: children.into_iter().cloned().map(Into::into).collect() }
+            fn [<$i _inner>](attrs: Vec<Attr>, children: Vec<Node>) -> Node {
+                Node::Element { tag: stringify!($i).into(), attrs, children }
             })+
         }
     };
@@ -84,12 +78,12 @@ macro_rules! html_self_closing {
     ($($i:ident),+) => {
         paste! {
             $(
-                pub fn $i<const N: usize>(attrs: [Attr; N]) -> Node {
-                    [<$i _inner>](&attrs)
+                pub fn $i(attrs: impl Into<Vec<Attr>>) -> Node {
+                    [<$i _inner>](attrs.into())
                 }
 
-                pub fn [<$i _inner>](attrs: &[Attr]) -> Node {
-                Node::LeafElement { tag: stringify!($i).into(), attrs: attrs.to_vec() }
+                fn [<$i _inner>](attrs: Vec<Attr>) -> Node {
+                Node::LeafElement { tag: stringify!($i).into(), attrs }
             })+
         }
     };
@@ -98,11 +92,11 @@ macro_rules! html_self_closing {
 html!(
     a, abbr, address, article, aside, audio, b, bdi, bdo, blockquote, button, canvas, caption,
     cite, code, col, colgroup, data, datalist, dd, del, details, dfn, dialog, div, dl, dt, em,
-    embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, i, iframe,
-    ins, kbd, label, legend, li, main, map, mark, math, menu, menuitem, meter, nav, noscript,
-    object, ol, optgroup, option, output, p, param, picture, pre, progress, q, rp, rt, ruby, s,
-    samp, section, select, small, span, strong, sub, summary, sup, svg, table, tbody, td, textarea,
-    tfoot, th, thead, time, tr, u, ul, var, video, wbr
+    embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, html, i,
+    iframe, ins, kbd, label, legend, li, main, map, mark, math, menu, menuitem, meter, nav,
+    noscript, object, ol, optgroup, option, output, p, param, picture, pre, progress, q, rp, rt,
+    ruby, s, samp, section, select, small, span, strong, sub, summary, sup, svg, table, tbody, td,
+    textarea, tfoot, th, thead, time, tr, u, ul, var, video, wbr
 );
 
 html_self_closing!(area, base, br, hr, img, input, link, meta, source, track);
@@ -115,26 +109,26 @@ impl Into<Node> for &'static str {
     }
 }
 
-impl Node {
-    pub fn render(&self) -> String {
-        match self {
-            Node::Doctype { content } => todo!(),
-            Node::Html { attrs, children } => todo!(),
-            Node::Head { children } => todo!(),
-            Node::Body { attrs, children } => todo!(),
-            Node::Fragment { children } => todo!(),
-            Node::Element {
-                tag,
-                attrs,
-                children,
-            } => todo!(),
-            Node::LeafElement { tag, attrs } => todo!(),
-            Node::Comment { content } => todo!(),
-            Node::Text { content } => todo!(),
-            Node::UnsafeInlineHtml { content } => todo!(),
-            Node::Script { script } => todo!(),
-            Node::Nothing => todo!(),
-        }
+pub fn title(text: impl Into<String>) -> Node {
+    Node::Element {
+        tag: "title".into(),
+        attrs: vec![],
+        children: vec![Node::Text {
+            content: text.into(),
+        }],
+    }
+}
+
+pub fn head(children: impl Into<Vec<Node>>) -> Node {
+    Node::Head {
+        children: children.into(),
+    }
+}
+
+pub fn body(attrs: impl Into<Vec<Attr>>, children: impl Into<Vec<Node>>) -> Node {
+    Node::Body {
+        attrs: attrs.into(),
+        children: children.into(),
     }
 }
 
@@ -148,10 +142,10 @@ mod tests {
         ol(
             [],
             [
-                li([], ["Hello, Mercury!"]),
-                li([], ["Hello, Venus!"]),
-                li([], ["Hello, World!"]),
-                li([], ["Hello, Mars!"]),
+                li([], ["Hello, Mercury!".into()]),
+                li([], ["Hello, Venus!".into()]),
+                li([], ["Hello, World!".into()]),
+                li([], ["Hello, Mars!".into()]),
             ],
         )
     }

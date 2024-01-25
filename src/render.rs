@@ -1,7 +1,7 @@
 use crate::{
     attrs::{self, Attr},
     document::{self, Document},
-    html::Node,
+    elements::Node,
 };
 
 pub fn render_document(tree: Node) -> String {
@@ -69,6 +69,7 @@ fn render_attrs(attrs: Vec<Attr>) -> String {
         .into_iter()
         .map(Attr::render)
         .fold(String::new(), |mut acc, s| {
+            acc.push(' ');
             acc.push_str(&s);
             acc
         })
