@@ -62,7 +62,7 @@ attr!(
     hx_trigger,
     hx_vals,
     hx_confirm,
-    hx_delete, 
+    hx_delete,
     hx_disable,
     hx_disable_elt,
     hx_disinherit,
@@ -133,6 +133,13 @@ pub fn loop_() -> Attr {
 pub fn data_attr(name: impl AsRef<str>, value: impl Into<String>) -> Attr {
     Attr::Attr {
         name: ["data-", name.as_ref()].concat(),
+        value: value.into(),
+    }
+}
+
+pub fn hx_on(name: impl AsRef<str>, value: impl Into<String>) -> Attr {
+    Attr::Attr {
+        name: ["hx-on:", name.as_ref()].concat(),
         value: value.into(),
     }
 }
