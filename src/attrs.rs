@@ -101,6 +101,13 @@ bool_attr!(
     selected
 );
 
+pub fn attr(name: impl Into<String>, value: impl Into<String>) -> Attr {
+    Attr::Attr {
+        name: name.into(),
+        value: value.into(),
+    }
+}
+
 pub fn for_(value: impl Into<String>) -> Attr {
     Attr::Attr {
         name: "for".into(),
